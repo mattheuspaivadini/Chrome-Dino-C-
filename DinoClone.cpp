@@ -96,9 +96,9 @@ int main()
                 }
             }
         }
-
-        int rand_distance = std::rand() % 2 + 1;
-        if (count % (50 * rand_distance) == 0)
+        //Essa variavel é a distância minima na tela
+        int min_distance = 600;
+        if (sprites.empty() || (window.getSize().x - sprites.back().getPosition().x) > (min_distance + (std::rand() % 300)))
         {
             int rand_obj = std::rand() % objs.size();
             sf::Sprite sprite(texture);
@@ -107,13 +107,13 @@ int main()
             if (sprite.getTextureRect().size.y == 68)
             {
                 sprite.setPosition(
-                    { window.getSize().x, 410 }
+                    { static_cast<float>(window.getSize().x), 410.f }
                 );
             }
             else
             {
                 sprite.setPosition(
-                    { window.getSize().x, 520 - sprite.getTextureRect().size.y + gap }
+                    { static_cast<float>(window.getSize().x), 520.f - sprite.getTextureRect().size.y + gap }
                 );
             }
 
@@ -175,17 +175,18 @@ int main()
                 frame_ground = 0.f;
             }
 
+            // Bird animation
+            frame_bird += 0.08f;
+            if (frame_bird >= 1.5f)
+            {
+                frame_bird -= 1.5f;
+            }
+
             for (size_t i{}; i < sprites.size(); ++i)
             {
                 if (sprites[i].getTextureRect().size.y == 68)
                 {
-                    frame_bird += 0.08f;
-
-                    if (frame_bird > 1.5f)
-                    {
-                        frame_bird -= 1.5f;
-                    }
-                    sprites[i].setTextureRect(sf::IntRect({ 260 + 92 * static_cast<int>(frame_bird), 14 }, { 92, 67 }));
+                    sprites[i].setTextureRect(sf::IntRect({ 260 + 92 * static_cast<int>(frame_bird), 14 }, { 92, 68 }));
                 }
                 sprites[i].move({ -10.f, 0 });
                 if (sprites[i].getPosition().x < -sprites[i].getTextureRect().size.x)
@@ -194,10 +195,7 @@ int main()
                 }
             }
 
-            for (size_t i {}; i < sprites.size(); ++i)
-            {
-                window.draw(sprites[i]);
-            }
+            
 
             ground.setPosition({ frame_ground, ground.getPosition().y });
             ground_back.setPosition({ frame_ground + (ground_width - 40), ground.getPosition().y });
@@ -208,6 +206,13 @@ int main()
             window.draw(ground_back);
             window.draw(dino);
 
+            //spawn dos obstaculos na tela
+            for (size_t i{}; i < sprites.size(); ++i)
+            {
+                window.draw(sprites[i]);
+            }
+
+            //genuinamente não sei o que faz, mas o código explode sem
             ++count;
             if (count >= 99999)
             {

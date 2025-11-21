@@ -1,6 +1,6 @@
 #include <SFML/Graphics.hpp>
 #include <unordered_map>
-#include <string>
+#include <iostream>
 #include <iomanip>
 #include <sstream>
 
@@ -23,9 +23,7 @@ int main()
         return 1;
     }
 
-
     // Setup sprites
-
 
     //Pontuação
     sf::Sprite hi(texture);
@@ -52,7 +50,13 @@ int main()
     float start_x = 1140.f;
     float start_y = hi.getPosition().y;
 
+    //colision
 
+    sf::RectangleShape rect_dino(sf::Vector2f(40.f, 70.f));
+    rect_dino.setFillColor(sf::Color::Red);
+    std::vector<sf::RectangleShape> rect_objs = {};
+    bool gamover = { false };
+    
     // Ground
     sf::Sprite ground(texture), ground_back(texture);
     ground.setTextureRect(sf::IntRect({ 2, 104 }, { 2440, 26 }));
@@ -148,10 +152,15 @@ int main()
                 );
             }
 
+			sf::RectangleShape rect_obj(sf::Vector2f(
+            sprite.getTextureRect().size.x,
+            sprite.getTextureRect().size.y
+            ));
+			rect_obj.setFillColor(sf::Color::Blue);
+            rect_obj.setPosition(sprite.getPosition());
             sprites.push_back(sprite);
+			rect_objs.push_back(rect_obj);
         };
-        
-
 
             // Physics
              velocity += 1.f;
@@ -176,8 +185,6 @@ int main()
                 frame_dino -= 4.f;
             }
 
-            
-
             // Dino crouching
             frame_down += 0.1f;
             if (frame_down > 1.5f)
@@ -187,17 +194,18 @@ int main()
 
             if (crouching)
             {
-                //int runIndex = static_cast<int>(frame_down); // 0..3
                 dino.setTextureRect(sf::IntRect({ 2206 + 118 * static_cast<int>(frame_down), 36 }, { 118, 60 }));
                 dino.setPosition({ dino.getPosition().x, gravity + 30 });
+				rect_dino.setSize(sf::Vector2f(100.f, 40.f));
+                rect_dino.setPosition(sf::Vector2f(dino.getPosition().x + 20.f, gravity + 40.f));
             }
             else
             {
-                //int runIndex = static_cast<int>(frame_dino); // 0..3
                 dino.setTextureRect(sf::IntRect({ 1678 + 88 * static_cast<int>(frame_dino), 2 }, { 88, 94 }));
                 dino.setPosition({ dino.getPosition().x, gravity });
+                rect_dino.setSize(sf::Vector2f(40.f, 70.f));
+				rect_dino.setPosition(sf::Vector2f(dino.getPosition().x + 20.f, gravity + 10.f));
             }
-
 
             // Ground movement
             frame_ground -= 8.f;
@@ -220,13 +228,20 @@ int main()
                     sprites[i].setTextureRect(sf::IntRect({ 260 + 92 * static_cast<int>(frame_bird), 14 }, { 92, 68 }));
                 }
                 sprites[i].move({ -10.f, 0 });
+				rect_objs[i].move({ -10.f, 0 });
+
+				if (rect_dino.getGlobalBounds().findIntersection(rect_objs[i].getGlobalBounds()))
+                {
+                    gamover = true;
+                    std::cout << "GAME OVER" << "\n";
+                }
+
                 if (sprites[i].getPosition().x < -sprites[i].getTextureRect().size.x)
                 {
                     sprites.erase(sprites.begin() + i);
+					rect_objs.erase(rect_objs.begin() + i);
                 }
             }
-
-            
 
             ground.setPosition({ frame_ground, ground.getPosition().y });
             ground_back.setPosition({ frame_ground + (ground_width - 40), ground.getPosition().y });
@@ -235,11 +250,13 @@ int main()
             window.clear(sf::Color::White);
             window.draw(ground);
             window.draw(ground_back);
+			window.draw(rect_dino);
             window.draw(dino);
             
             //spawn dos obstaculos na tela
             for (size_t i{}; i < sprites.size(); ++i)
             {
+				window.draw(rect_objs[i]);
                 window.draw(sprites[i]);
             }
             
@@ -282,6 +299,5 @@ int main()
             window.display();
         }
 
-    
    return 0;
 }

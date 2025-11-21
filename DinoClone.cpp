@@ -1,4 +1,8 @@
 #include <SFML/Graphics.hpp>
+#include <unordered_map>
+#include <string>
+#include <iomanip>
+#include <sstream>
 
 int main()
 {
@@ -21,6 +25,33 @@ int main()
 
 
     // Setup sprites
+
+
+    //Pontuação
+    sf::Sprite hi(texture);
+	hi.setTextureRect(sf::IntRect({ 1494, 2 }, { 38, 21 }));
+    hi.setPosition({955, 167});
+    float hi_start_x = 1020.f;
+    int num_hi = 0;
+    float spacing = 20.f;
+    constexpr int total = {5};
+
+    std::unordered_map<char, sf::IntRect> digits = 
+    {
+        { '0', sf::IntRect({ 1294, 2 }, { 18, 21 }) },
+        { '1', sf::IntRect({ 1316, 2 }, { 18, 21 }) },
+        { '2', sf::IntRect({ 1334, 2 }, { 18, 21 }) },
+        { '3', sf::IntRect({ 1354, 2 }, { 18, 21 }) },
+        { '4', sf::IntRect({ 1374, 2 }, { 18, 21 }) },
+        { '5', sf::IntRect({ 1394, 2 }, { 18, 21 }) },
+        { '6', sf::IntRect({ 1414, 2 }, { 18, 21 }) },
+        { '7', sf::IntRect({ 1434, 2 }, { 18, 21 }) },
+        { '8', sf::IntRect({ 1454, 2 }, { 18, 21 }) },
+        { '9', sf::IntRect({ 1474, 2 }, { 18, 21 }) }
+    };
+    float start_x = 1140.f;
+    float start_y = hi.getPosition().y;
+
 
     // Ground
     sf::Sprite ground(texture), ground_back(texture);
@@ -205,14 +236,43 @@ int main()
             window.draw(ground);
             window.draw(ground_back);
             window.draw(dino);
-
+            
             //spawn dos obstaculos na tela
             for (size_t i{}; i < sprites.size(); ++i)
             {
                 window.draw(sprites[i]);
             }
+            
+            //count
+            std::stringstream ss;
+            ss << std::setw(total) << std::setfill('0') << count;
+            std::string count_str = ss.str();
+            float x = start_x;
+            for (char digit : count_str)
+            {
+                sf::Sprite sprite(texture);
+                sprite.setTextureRect(digits[digit]);
+                sprite.setPosition({ x, start_y });
+                window.draw(sprite);
+                x += spacing;
 
-            //genuinamente não sei o que faz, mas o código explode sem
+            };
+			window.draw(hi);
+
+            std::stringstream hi_ss;
+            hi_ss << std::setw(total) << std::setfill('0') << num_hi;
+            std::string hi_str = hi_ss.str();
+            float pos_hi_x = hi_start_x;
+            for (char digit : hi_str)
+            {
+                sf::Sprite sprite(texture);
+                sprite.setTextureRect(digits[digit]);
+                sprite.setPosition({ pos_hi_x, start_y });
+                window.draw(sprite);
+                pos_hi_x += spacing;
+
+            };
+
             ++count;
             if (count >= 99999)
             {

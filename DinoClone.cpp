@@ -1,6 +1,5 @@
 #include <SFML/Graphics.hpp>
 #include <unordered_map>
-#include <iostream>
 #include <iomanip>
 #include <sstream>
 
@@ -25,7 +24,7 @@ int main()
 
     // Setup sprites
 
-    //Pontuação
+    //Count
     sf::Sprite hi(texture);
 	hi.setTextureRect(sf::IntRect({ 1494, 2 }, { 38, 21 }));
     hi.setPosition({955, 167});
@@ -34,6 +33,7 @@ int main()
     float spacing = 20.f;
     constexpr int total = {5};
 
+    //count system
     std::unordered_map<char, sf::IntRect> digits = 
     {
         { '0', sf::IntRect({ 1294, 2 }, { 18, 21 }) },
@@ -53,7 +53,7 @@ int main()
     //colision
 
     sf::RectangleShape rect_dino(sf::Vector2f(40.f, 70.f));
-    rect_dino.setFillColor(sf::Color::Red);
+    rect_dino.setFillColor(sf::Color::Transparent);
     std::vector<sf::RectangleShape> rect_objs = {};
     bool gamover = { false };
     
@@ -64,7 +64,7 @@ int main()
     ground_back = ground;
 
     // height of dino sprite and gap from ground
-    constexpr int height = 94;
+    constexpr int height = 94; // even with dino.gettexturerect().size.y, DONT REMOVE THIS OR THE DINO WILL BE BUGGED AND I DONT FUCKIN KNOW WHY
     constexpr int gap = 24;
     constexpr int ground_width = 2440;
 
@@ -98,7 +98,7 @@ int main()
 
     while (window.isOpen())
     {
-        // Process the events
+        // Keys events
         while (const std::optional event = window.pollEvent())
         {
             if (event->is<sf::Event::Closed>())
@@ -131,39 +131,42 @@ int main()
                 }
             }
         }
-        //Essa variavel é a distância minima na tela
-        int min_distance = 600;
-        if (sprites.empty() || (window.getSize().x - sprites.back().getPosition().x) > (min_distance + (std::rand() % 300)))
+
+        if (!gamover)
         {
-            int rand_obj = std::rand() % objs.size();
-            sf::Sprite sprite(texture);
-            sprite.setTextureRect(objs[rand_obj]);
-
-            if (sprite.getTextureRect().size.y == 68)
+            //spawning objects system
+            int min_distance = 600;
+            if (sprites.empty() || (window.getSize().x - sprites.back().getPosition().x) > (min_distance + (std::rand() % 300)))
             {
-                sprite.setPosition(
-                    { static_cast<float>(window.getSize().x), 410.f }
-                );
-            }
-            else
-            {
-                sprite.setPosition(
-                    { static_cast<float>(window.getSize().x), 520.f - sprite.getTextureRect().size.y + gap }
-                );
-            }
+                int rand_obj = std::rand() % objs.size();
+                sf::Sprite sprite(texture);
+                sprite.setTextureRect(objs[rand_obj]);
 
-			sf::RectangleShape rect_obj(sf::Vector2f(
-            sprite.getTextureRect().size.x,
-            sprite.getTextureRect().size.y
-            ));
-			rect_obj.setFillColor(sf::Color::Blue);
-            rect_obj.setPosition(sprite.getPosition());
-            sprites.push_back(sprite);
-			rect_objs.push_back(rect_obj);
-        };
+                if (sprite.getTextureRect().size.y == 68)
+                {
+                    sprite.setPosition(
+                        { static_cast<float>(window.getSize().x), 410.f }
+                    );
+                }
+                else
+                {
+                    sprite.setPosition(
+                        { static_cast<float>(window.getSize().x), 520.f - sprite.getTextureRect().size.y + gap }
+                    );
+                }
+
+                sf::RectangleShape rect_obj(sf::Vector2f(
+                    sprite.getTextureRect().size.x,
+                    sprite.getTextureRect().size.y
+                ));
+                rect_obj.setFillColor(sf::Color::Transparent);
+                rect_obj.setPosition(sprite.getPosition());
+                sprites.push_back(sprite);
+                rect_objs.push_back(rect_obj);
+            };
 
             // Physics
-             velocity += 1.f;
+            velocity += 1.f;
             if (velocity < jump)
             {
                 velocity = jump;
@@ -192,11 +195,12 @@ int main()
                 frame_down -= 1.5f;
             }
 
+            // crouch and stand system
             if (crouching)
             {
                 dino.setTextureRect(sf::IntRect({ 2206 + 118 * static_cast<int>(frame_down), 36 }, { 118, 60 }));
                 dino.setPosition({ dino.getPosition().x, gravity + 30 });
-				rect_dino.setSize(sf::Vector2f(100.f, 40.f));
+                rect_dino.setSize(sf::Vector2f(100.f, 40.f));
                 rect_dino.setPosition(sf::Vector2f(dino.getPosition().x + 20.f, gravity + 40.f));
             }
             else
@@ -204,7 +208,7 @@ int main()
                 dino.setTextureRect(sf::IntRect({ 1678 + 88 * static_cast<int>(frame_dino), 2 }, { 88, 94 }));
                 dino.setPosition({ dino.getPosition().x, gravity });
                 rect_dino.setSize(sf::Vector2f(40.f, 70.f));
-				rect_dino.setPosition(sf::Vector2f(dino.getPosition().x + 20.f, gravity + 10.f));
+                rect_dino.setPosition(sf::Vector2f(dino.getPosition().x + 20.f, gravity + 10.f));
             }
 
             // Ground movement
@@ -228,37 +232,39 @@ int main()
                     sprites[i].setTextureRect(sf::IntRect({ 260 + 92 * static_cast<int>(frame_bird), 14 }, { 92, 68 }));
                 }
                 sprites[i].move({ -10.f, 0 });
-				rect_objs[i].move({ -10.f, 0 });
+                rect_objs[i].move({ -10.f, 0 });
 
-				if (rect_dino.getGlobalBounds().findIntersection(rect_objs[i].getGlobalBounds()))
+                if (rect_dino.getGlobalBounds().findIntersection(rect_objs[i].getGlobalBounds()))
                 {
                     gamover = true;
-                    std::cout << "GAME OVER" << "\n";
                 }
 
                 if (sprites[i].getPosition().x < -sprites[i].getTextureRect().size.x)
                 {
                     sprites.erase(sprites.begin() + i);
-					rect_objs.erase(rect_objs.begin() + i);
+                    rect_objs.erase(rect_objs.begin() + i);
                 }
             }
 
+            // ground position
             ground.setPosition({ frame_ground, ground.getPosition().y });
             ground_back.setPosition({ frame_ground + (ground_width - 40), ground.getPosition().y });
 
+        }
+
+        
             // Render
             window.clear(sf::Color::White);
             window.draw(ground);
             window.draw(ground_back);
-			window.draw(rect_dino);
-            window.draw(dino);
-            
-            //spawn dos obstaculos na tela
+            //spawn of objects (birds, cactus)
             for (size_t i{}; i < sprites.size(); ++i)
             {
 				window.draw(rect_objs[i]);
                 window.draw(sprites[i]);
             }
+			window.draw(rect_dino);
+            window.draw(dino);
             
             //count
             std::stringstream ss;
@@ -290,10 +296,30 @@ int main()
 
             };
 
-            ++count;
-            if (count >= 99999)
+            if (gamover == true)
             {
-                count = 99999;
+                dino.setTextureRect(sf::IntRect({ 2122, 6 }, { 80, 86 }));
+				if (count > num_hi)
+                {
+                    num_hi = count;
+                }
+                if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Enter))
+                {
+                    count = 0;
+                    rect_objs.clear();
+                    sprites.clear();
+                    gravity = ground.getPosition().y - (height - gap);
+                    velocity = 0.f;
+                    gamover = false;  
+                }
+            }
+            else
+            {
+                ++count;
+                if (count >= 99999)
+                {
+                    count = 99999;
+                }
             }
 
             window.display();

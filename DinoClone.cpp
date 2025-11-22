@@ -56,6 +56,25 @@ int main()
     rect_dino.setFillColor(sf::Color::Transparent);
     std::vector<sf::RectangleShape> rect_objs = {};
     bool gamover = { false };
+
+    //Game over sprites & logic
+    sf::Sprite sprite_gameover(texture);
+    sprite_gameover.setTextureRect(sf::IntRect({1295, 29},{380, 21}));
+    sprite_gameover.setPosition(
+        sf::Vector2f(
+            window.getSize().x / 2.f - sprite_gameover.getTextureRect().size.x / 2.f,
+            window.getSize().y / 2.f - sprite_gameover.getTextureRect().size.y / 2.f
+        )
+    );
+    //Restart
+    sf::Sprite icon_restart(texture);
+    icon_restart.setTextureRect(sf::IntRect({506, 130},{72, 64}));
+    icon_restart.setPosition(
+        sf::Vector2f(
+            window.getSize().x / 2.f - icon_restart.getTextureRect().size.x / 2.f,
+            window.getSize().y / 2.f - icon_restart.getTextureRect().size.y / 2.f + 70.f
+        )
+    );
     
     // Ground
     sf::Sprite ground(texture), ground_back(texture);
@@ -298,6 +317,8 @@ int main()
 
             if (gamover == true)
             {
+                window.draw(sprite_gameover);
+                window.draw(icon_restart);
                 dino.setTextureRect(sf::IntRect({ 2122, 6 }, { 80, 86 }));
 				if (count > num_hi)
                 {
@@ -321,6 +342,8 @@ int main()
                     count = 99999;
                 }
             }
+
+            
 
             window.display();
         }

@@ -153,6 +153,10 @@ int main()
     bool crouching = false;
     bool is_crouching = false;
 
+    //difficulty
+    float speed = 0.2;
+
+
     while (window.isOpen())
     {
         // Keys events
@@ -287,8 +291,8 @@ int main()
                 {
                     sprites[i].setTextureRect(sf::IntRect({ 260 + 92 * static_cast<int>(frame_bird), 14 }, { 92, 68 }));
                 }
-                sprites[i].move({ -10.f, 0 });
-                rect_objs[i].move({ -10.f, 0 });
+                sprites[i].move({ -10.f - speed, 0 });
+                rect_objs[i].move({ -10.f - speed, 0 });
 
                 if (rect_dino.getGlobalBounds().findIntersection(rect_objs[i].getGlobalBounds()))
                 {
@@ -303,8 +307,8 @@ int main()
             }
 
             // ground position
-            ground.setPosition({ frame_ground, ground.getPosition().y });
-            ground_back.setPosition({ frame_ground + (ground_width - 40), ground.getPosition().y });
+            ground.setPosition({ frame_ground - speed, ground.getPosition().y });
+            ground_back.setPosition({ frame_ground - speed + (ground_width - 40), ground.getPosition().y });
 
             //Clouds positions
 			for (size_t i{}; i < clouds.size(); ++i)
@@ -327,6 +331,11 @@ int main()
             {
                 sun.setTextureRect(sf::IntRect({ 1074, 2 }, { 80, 80 }));
             }
+        }
+
+        if (count % 250 == 0)
+        {
+            speed += 0.7f;
         }
 
         if (count % 1000 == 0 && count > 1)
@@ -407,6 +416,7 @@ int main()
                 pos_hi_x += spacing;
             };
 
+            //Restart the game
             if (gamover == true)
             {
                 window.draw(sprite_gameover);
@@ -419,6 +429,7 @@ int main()
                 if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space))
                 {
                     count = 0;
+                    speed = 0.2f;
                     rect_objs.clear();
                     sprites.clear();
                     gravity = ground.getPosition().y - (height - gap);

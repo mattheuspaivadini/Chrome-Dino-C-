@@ -76,6 +76,9 @@ int main()
         )
     );
     
+    int color = { 255 };
+    bool day{ true }, change_day{ false };
+
     // Ground
     sf::Sprite ground(texture), ground_back(texture);
     ground.setTextureRect(sf::IntRect({ 2, 104 }, { 2440, 26 }));
@@ -271,9 +274,37 @@ int main()
 
         }
 
+        if (count % 1000 == 0 && count > 1)
+        {
+            change_day = true;
+        }
+        if (change_day)
+        {
+            if (day)
+            {
+                color -= 3;
+                if (color <= 30)
+                {
+                    color = 30;
+                    day = false;
+                    change_day = false;
+                }
+            }
+            else
+            {
+                color += 3;
+                if (color >= 255)
+                {
+                    color = 255;
+                    day = true;
+                    change_day = false;
+                }
+            }
+        }
         
             // Render
-            window.clear(sf::Color::White);
+            window.clear(sf::Color(color, color, color));
+
             window.draw(ground);
             window.draw(ground_back);
             //spawn of objects (birds, cactus)

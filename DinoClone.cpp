@@ -66,11 +66,13 @@ int main()
             window.getSize().y / 2.f - sprite_gameover.getTextureRect().size.y / 2.f
         )
     );
+
     //Restart
     sf::Sprite icon_restart(texture);
     icon_restart.setTextureRect(sf::IntRect({506, 130},{72, 64}));
     icon_restart.setPosition(
-        sf::Vector2f(
+        sf::Vector2f
+        (
             window.getSize().x / 2.f - icon_restart.getTextureRect().size.x / 2.f,
             window.getSize().y / 2.f - icon_restart.getTextureRect().size.y / 2.f + 70.f
         )
@@ -78,6 +80,41 @@ int main()
     
     int color = { 255 };
     bool day{ true }, change_day{ false };
+
+    sf::Sprite sun(texture);
+    sf::Sprite cloud(texture);
+    sf::Sprite star_1(texture);
+    sf::Sprite star_2(texture);
+    std::vector<sf::Sprite> clouds = {};
+    
+    sun.setTextureRect(sf::IntRect({ 1074, 2 }, { 80, 80 }));
+    sun.setPosition(
+        sf::Vector2f
+        (
+            window.getSize().x / 2.f - sun.getTextureRect().size.x / 2.f,
+            window.getSize().y / 2.f - sun.getTextureRect().size.y / 2.f - 150.f
+        )
+    );
+	sun.setColor(sf::Color(255, 255, 255, 100));
+
+    cloud.setTextureRect(sf::IntRect({166, 2}, {92, 27}));
+	cloud.setColor(sf::Color(255, 255, 255, 170));
+    for (size_t i{}; i < 6; ++i)
+    {
+        clouds.push_back(cloud);
+    }
+    clouds[0].setPosition({ 100.f, 100.f });
+    clouds[1].setPosition({ 300.f, 300.f });
+    clouds[2].setPosition({ 1280.f, 200.f });
+    clouds[3].setPosition({ 650.f, 60.f });
+    clouds[4].setPosition({ 830.f, 150.f });
+    clouds[5].setPosition({ 1000.f, 400.f });
+
+	star_1.setTextureRect(sf::IntRect({ 1274, 39 }, { 18, 17 }));
+	star_1.setColor(sf::Color(255, 255, 255, 70));
+    star_2 = star_1;
+	star_1.setPosition({ 200.f, 200.f });
+	star_2.setPosition({ 800.f, 300.f });
 
     // Ground
     sf::Sprite ground(texture), ground_back(texture);
@@ -96,24 +133,22 @@ int main()
     dino.setPosition({ 150.f, ground.getPosition().y - (dino.getTextureRect().size.y - gap)});
 
     // Objects
-    std::vector<sf::IntRect> objs = {
+    std::vector<sf::IntRect> objs = 
+    {
         sf::IntRect({260, 14}, {92, 68}), //bird (w/ 2 animation frames)
         sf::IntRect({446, 2}, {68, 70}), // 2 small cactus
         sf::IntRect({752, 2 }, { 50, 96 }), // 1 large cactus
         sf::IntRect({848, 2}, {104, 98}), // 3 large cactus
-
     };
+
     std::vector<sf::Sprite> sprites = {};
     int count = { 0 };
     float frame_bird = 0.f; 
-    
     float frame_ground = 0.f;
     float frame_dino = 0.f;
-
     float gravity = ground.getPosition().y - (height - gap);
     float velocity = 0.f;
     const float jump = -20.f;
-
     float frame_down = 0.f;
     bool crouching = false;
     bool is_crouching = false;
@@ -142,7 +177,6 @@ int main()
                 }
             }
 
-          
             if (event->is<sf::Event::KeyReleased>())
             {
                 auto key = event->getIf<sf::Event::KeyReleased>()->code;
@@ -272,6 +306,27 @@ int main()
             ground.setPosition({ frame_ground, ground.getPosition().y });
             ground_back.setPosition({ frame_ground + (ground_width - 40), ground.getPosition().y });
 
+            //Clouds positions
+			for (size_t i{}; i < clouds.size(); ++i)
+            {
+                clouds[i].setPosition(
+                    sf::Vector2f(clouds[i].getPosition().x - 2.f, clouds[i].getPosition().y)
+                );
+                if (clouds[i].getPosition().x < -clouds[i].getTextureRect().size.y)
+                {
+                    clouds[i].setPosition({ 1280, clouds[i].getPosition().y });
+                };
+            }
+
+            //Changes the sun if it's night
+            if (color < 200)
+            {
+                sun.setTextureRect(sf::IntRect({ 1034, 2 }, { 40, 80 }));
+            }
+            else
+            {
+                sun.setTextureRect(sf::IntRect({ 1074, 2 }, { 80, 80 }));
+            }
         }
 
         if (count % 1000 == 0 && count > 1)
@@ -305,6 +360,14 @@ int main()
             // Render
             window.clear(sf::Color(color, color, color));
 
+            window.draw(sun);
+			for (size_t i{}; i < clouds.size(); ++i)
+            {
+                window.draw(clouds[i]);
+            }
+			window.draw(star_1);
+			window.draw(star_2);
+
             window.draw(ground);
             window.draw(ground_back);
             //spawn of objects (birds, cactus)
@@ -328,7 +391,6 @@ int main()
                 sprite.setPosition({ x, start_y });
                 window.draw(sprite);
                 x += spacing;
-
             };
 			window.draw(hi);
 
@@ -343,7 +405,6 @@ int main()
                 sprite.setPosition({ pos_hi_x, start_y });
                 window.draw(sprite);
                 pos_hi_x += spacing;
-
             };
 
             if (gamover == true)
@@ -355,7 +416,7 @@ int main()
                 {
                     num_hi = count;
                 }
-                if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Enter))
+                if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space))
                 {
                     count = 0;
                     rect_objs.clear();
@@ -374,10 +435,8 @@ int main()
                 }
             }
 
-            
-
             window.display();
-        }
+    }
 
    return 0;
 }

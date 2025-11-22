@@ -2,6 +2,8 @@
 #include <unordered_map>
 #include <iomanip>
 #include <sstream>
+#include <array>
+#include "stylesheet.hpp"
 
 int main()
 {
@@ -17,10 +19,9 @@ int main()
     window.setFramerateLimit(60);
 
     sf::Texture texture;
-    if (!texture.loadFromFile("stylesheet.png"))
-    {
-        return 1;
-    }
+    texture.loadFromMemory(data.data(), data.size());
+    
+    
 
     // Setup sprites
 
@@ -333,11 +334,13 @@ int main()
             }
         }
 
+        //dificult system
         if (count % 250 == 0)
         {
             speed += 0.7f;
         }
 
+        //change day
         if (count % 1000 == 0 && count > 1)
         {
             change_day = true;
@@ -434,6 +437,9 @@ int main()
                     sprites.clear();
                     gravity = ground.getPosition().y - (height - gap);
                     velocity = 0.f;
+					change_day = false;
+					day = true;
+                    color = 255;
                     gamover = false;  
                 }
             }

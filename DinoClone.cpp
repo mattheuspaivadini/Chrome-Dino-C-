@@ -20,9 +20,18 @@ int main()
 
     sf::Texture texture;
     texture.loadFromMemory(data.data(), data.size());
-    
-    
 
+    float count_time = 0.f;
+    int count = { 0 };
+    float frame_bird = 0.f;
+    float frame_ground = 0.f;
+    float frame_dino = 0.f;
+    float velocity = 0.f;
+    const float jump = -20.f;
+    float frame_down = 0.f;
+    bool crouching = false;
+    bool is_crouching = false;
+    
     // Setup sprites
 
     //Count
@@ -141,18 +150,9 @@ int main()
         sf::IntRect({752, 2 }, { 50, 96 }), // 1 large cactus
         sf::IntRect({848, 2}, {104, 98}), // 3 large cactus
     };
+    float gravity = ground.getPosition().y - (dino.getTextureRect().size.y - gap);
 
     std::vector<sf::Sprite> sprites = {};
-    int count = { 0 };
-    float frame_bird = 0.f; 
-    float frame_ground = 0.f;
-    float frame_dino = 0.f;
-    float gravity = ground.getPosition().y - (height - gap);
-    float velocity = 0.f;
-    const float jump = -20.f;
-    float frame_down = 0.f;
-    bool crouching = false;
-    bool is_crouching = false;
 
     //difficulty
     float speed = 0.2;
@@ -174,10 +174,12 @@ int main()
                 {
                     velocity = jump;
                 }
-                if (key == sf::Keyboard::Key::Down && !is_crouching &&
-                    gravity == ground.getPosition().y - (dino.getTextureRect().size.y - gap))
+                if (key == sf::Keyboard::Key::Down && !is_crouching)
                 {
-                    crouching = true;
+                    if (gravity == ground.getPosition().y - (dino.getTextureRect().size.y - gap))
+                    {
+                        crouching = true;
+                    }
                     is_crouching = true;
                 }
             }
@@ -227,7 +229,15 @@ int main()
             };
 
             // Physics
-            velocity += 1.f;
+            if (is_crouching && gravity < (ground.getPosition().y - (height - gap)))
+            {
+                velocity += 3.f;
+            }
+            else
+            {
+                velocity += 1.f;
+            }
+
             if (velocity < jump)
             {
                 velocity = jump;
@@ -273,7 +283,7 @@ int main()
             }
 
             // Ground movement
-            frame_ground -= 8.f;
+            frame_ground -= (8.f + speed);
             if (frame_ground < -ground_width)
             {
                 frame_ground = 0.f;
@@ -292,8 +302,8 @@ int main()
                 {
                     sprites[i].setTextureRect(sf::IntRect({ 260 + 92 * static_cast<int>(frame_bird), 14 }, { 92, 68 }));
                 }
-                sprites[i].move({ -10.f - speed, 0 });
-                rect_objs[i].move({ -10.f - speed, 0 });
+                sprites[i].move({ -8.f - speed, 0 });
+                rect_objs[i].move({ -8.f - speed, 0 });
 
                 if (rect_dino.getGlobalBounds().findIntersection(rect_objs[i].getGlobalBounds()))
                 {
@@ -308,8 +318,8 @@ int main()
             }
 
             // ground position
-            ground.setPosition({ frame_ground - speed, ground.getPosition().y });
-            ground_back.setPosition({ frame_ground - speed + (ground_width - 40), ground.getPosition().y });
+            ground.setPosition({ frame_ground, ground.getPosition().y });
+            ground_back.setPosition({ frame_ground + (ground_width - 40), ground.getPosition().y });
 
             //Clouds positions
 			for (size_t i{}; i < clouds.size(); ++i)
@@ -445,7 +455,12 @@ int main()
             }
             else
             {
-                ++count;
+                count_time += 0.2f;
+                if (count_time >= 1.f)
+                {
+                    count_time -= 1.f;
+                    ++count;
+                }
                 if (count >= 99999)
                 {
                     count = 99999;
